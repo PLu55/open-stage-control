@@ -29,6 +29,7 @@ module.exports.widgets = {
     plot: require('./graphs/plot'),
     eq: require('./graphs/eq'),
     visualizer: require('./graphs/visualizer'),
+    iplot: require('./graphs/iplot'),
 
     // indicators
     led: require('./indicators/led'),
@@ -56,7 +57,8 @@ module.exports.categories = {
     'Basics':['button', 'switch', 'dropdown', 'menu', 'input', 'file'],
     'Containers':['panel', 'modal', 'clone', 'matrix', 'keyboard', 'patchbay'],
     'Frames':['frame', 'svg', 'html', 'image'],
-    'Graphs':['plot','eq','visualizer'],
+    'Graphs':['plot','eq','visualizer', 'iplot'],
+
     'Indicators':['led', 'text'],
     'Pads':['xy','rgb','multixy'],
     'Sliders':['fader','knob', 'encoder', 'range'],

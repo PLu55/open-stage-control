@@ -13,3 +13,5 @@ app/docs/*
 app/package.json
 package-lock.json
 *.pyc
+*~
+\#*\#
