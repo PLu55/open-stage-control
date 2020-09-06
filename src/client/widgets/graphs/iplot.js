@@ -1,9 +1,11 @@
-var {mapToScale} = require('../utils'),
+var {clip, mapToScale} = require('../utils'),
     Canvas = require('../common/canvas'),
-    html = require('nanohtml'),
-    StaticProperties = require('../mixins/static_properties')
+    html = require('nanohtml')
+    //StaticProperties = require('../mixins/static_properties')
 
-module.exports = class IPlot extends StaticProperties(Canvas, {bypass: true, interaction: false}) {
+const clamp = function (x, min, max) { return (x < min) ? min : (x > max) ? max : x; }
+
+module.exports = class IPlot extends Canvas {
 
     static description() {
 
@@ -23,11 +25,10 @@ module.exports = class IPlot extends StaticProperties(Canvas, {bypass: true, int
             logScaleX: {type: 'boolean|number', value: false, help: 'Set to `true` to use logarithmic scale for the x axis (base 10). Set to a `number` to define the logarithm\'s base.'},
             logScaleY: {type: 'boolean|number', value: false, help: 'Set to `true` to use logarithmic scale for the y axis (base 10). Set to a `number` to define the logarithm\'s base.'},
             origin: {type: 'number', value: 'auto', help: 'Defines the y axis origin. Set to `false` to disable it.'},
-            dots: {type: 'boolean', value: false, help: 'Draw dots on the line'},
-            bars: {type: 'boolean', value: false, help: 'Set to `true` to use draw bars instead (disables `logScaleX` and forces `x axis` even spacing)'},
             pips:{type: 'boolean', value: true, help: 'Set to `false` to hide the scale'},
 
-        }, ['interaction', 'decimals', 'typeTags', 'bypass'], {
+//        }, ['interaction', 'decimals', 'typeTags', 'bypass'], {
+          }, [], {
 
             value: {type: 'array|string', value: '', help: [
                 '- `Array` of `y` values',
@@ -55,29 +56,186 @@ module.exports = class IPlot extends StaticProperties(Canvas, {bypass: true, int
         this.logScaleY = this.getProp('logScaleY')
         this.pips = {
             x : {
-                min: Math.abs(this.rangeX.min)>=1000?this.rangeX.min/1000+'k':this.rangeX.min,
-                max: Math.abs(this.rangeX.max)>=1000?this.rangeX.max/1000+'k':this.rangeX.max
+                min: Math.abs(this.rangeX.min)>=1000 ? this.rangeX.min/1000+'k' : this.rangeX.min,
+                max: Math.abs(this.rangeX.max)>=1000 ? this.rangeX.max/1000+'k' : this.rangeX.max
             },
             y : {
-                min: Math.abs(this.rangeY.min)>=1000?this.rangeY.min/1000+'k':this.rangeY.min,
-                max: Math.abs(this.rangeY.max)>=1000?this.rangeY.max/1000+'k':this.rangeY.max
+                min: Math.abs(this.rangeY.min)>=1000 ? this.rangeY.min/1000+'k' : this.rangeY.min,
+                max: Math.abs(this.rangeY.max)>=1000 ? this.rangeY.max/1000+'k' : this.rangeY.max
+            }
+        }
+        this.hit = -1;
+        this.x0 = -1;
+        this.y0 = -1;
+
+        this.on('draginit',(e)=>{
+            this.draginitHandle(e)
+        }, {element: this.canvas})
+
+        this.on('drag',(e)=>{
+            this.dragHandle(e)
+        }, {element: this.canvas})
+
+        this.on('dragend',(e)=>{
+            this.dragendHandle(e)
+        }, {element: this.canvas})
+
+    }
+
+    // transform x' = ax + m
+    //           x'' = bx' + m
+    //           x'' = b(ax + m) + n = abx +bm + n
+    //           c = ab; d = bm + n
+    //           x'' = cx + d
+    //           x = x''/c - d
+
+    transCoeff( c0, c1, d0, d1 ) {
+       var a, b, m, n;
+
+       a = c1 - c0;
+       m = c0;
+       b = d1 - d0;
+       n = d0;
+       return [ a * b, b * m + n];
+    }
+
+// [[ 0, 0 ], [ 0.3, 0.8 ],[ 1, 0.2 ]]
+
+    transformCoefficients() {
+       var xa, xm, ya, ym, padding;
+       padding = (this.cssVars.padding + PXSCALE);
+
+       [xa, xm] = this.transCoeff(this.rangeX.min, this.rangeX.max, padding, this.width - padding);
+       [ya, ym] = this.transCoeff(this.rangeY.min, this.rangeY.max, this.height - 2 * PXSCALE - padding, 2 * PXSCALE + padding);
+       return  [xa, xm, ya, ym];
+    }
+
+    transform(pointsIn) {
+        // Assume the pointsIn is in a homogenious format either [[x0, y0],[x1, y1],...,[xn-1,yn-1]]
+        //  or [x0, y0, x1, y1,...,xn-1,yn-1], the result is always in the second format.
+
+        var pointsOut = [],
+            length = pointsIn.length ? pointsIn.length : 0
+        const [xa, xm, ya, ym] =  this.transformCoefficients()
+
+        if ( pointsIn[0] instanceof Array ) {
+            for ( var i = 0; i < length; ++i ) {
+                pointsOut.push(xa * pointsIn[i][0] + xm)
+                pointsOut.push(ya * pointsIn[i][1] + ym)           
+            }
+        } else {
+            for ( var i = 0; i < length; i+=2 ) {
+                pointsOut.push(xa * pointsIn[i] + xm)
+                pointsOut.push(ya * pointsIn[i+1] + ym)           
+            }
+        }
+        return pointsOut
+    }
+
+    inverseTransform(pointsIn) {
+        // Assume the pointsIn is in a homogenious format either [[x0, y0],[x1, y1],...,[xn-1,yn-1]]
+        //  or [x0, y0, x1, y1,...,xn-1,yn-1], the result is always in the second format.
+
+        var pointsOut = [],
+            length = pointsIn.length ? pointsIn.length : 0;
+        const [xa, xm, ya, ym] =  this.transformCoefficients();
+
+        if ( pointsIn[0] instanceof Array ) {
+            for ( var i = 0; i < length; ++i ) {
+                pointsOut.push((pointsIn[i][0] - xm) / xa);
+                pointsOut.push((pointsIn[i][1] - ym) / ya);          
+            }
+        } else {
+            for ( var i = 0; i < length; i+=2 ) {
+                pointsOut.push((pointsIn[i] - xm) / xa);
+                pointsOut.push((pointsIn[i+1] - ym) / ya);           
+            }
+        }
+        return pointsOut;
+    }
+
+    draginitHandle(e) {
+
+        if ( !this.value || this.value.length == 0 ) return;
+
+        var points = this.transform(this.value);
+        var length = points.length;
+
+        for ( var i = 0; i < length; i += 2 ) {
+            var x, y, d2, dmem = 16;
+            x = points[i] - e.offsetX;
+            y = points[i+1] - e.offsetY;
+            d2 = x*x + y*y;
+            if ( d2 < dmem ) {
+                this.hit = i/2;
+                dmem = d2;
             }
         }
 
+        if ( e.shiftKey && ! e.ctrlKey ) {
+
+            for ( var i = 0; i < length; i += 2 ) {
+                if ( points[i] >= e.offsetX ) {
+                    var valueLength = this.value.length; 
+                    this.hit = i/2;
+
+                    for ( var j = valueLength; j > this.hit; --j) {
+                        this.value[j] =  this.value[j-1];
+                    }
+
+                    [x, y] = this.inverseTransform( [ e.offsetX,  e.offsetY]);
+                    this.value[this.hit] = [clamp(x, this.rangeX.min, this.rangeX.max),
+                                            clamp(y, this.rangeY.min, this.rangeY.max)];
+                    this.x0 = e.offsetX;
+                    this.y0 = e.offsetY;
+                    this.batchDraw();
+                    break;
+                } 
+            }
+
+        } else if ( ! e.shiftKey &&  e.ctrlKey ) {
+
+            if ( this.hit >= 0 ) {
+                this.value.splice(this.hit, 1);
+                this.hit = -1;
+                this.batchDraw();
+            }
+
+        } else {
+            this.x0 = e.offsetX;
+            this.y0 = e.offsetY;
+        }   
+    }
+
+    dragHandle(e) {
+
+        if ( this.hit >= 0 ) {
+            var x, y;
+            var dx = (e.offsetX - this.x0);
+            var dy = (e.offsetY - this.y0);
+            [x, y] = this.transform(this.value[this.hit]);
+            [x, y] = this.inverseTransform( [x + dx, y + dy]);
+            this.value[this.hit][0] = clamp(x, this.rangeX.min, this.rangeX.max);
+            this.value[this.hit][1] = clamp(y, this.rangeY.min, this.rangeY.max);
+            this.x0 = e.offsetX;
+            this.y0 = e.offsetY;
+            this.batchDraw();
+        }
+    }
+
+    dragendHandle(e) {
+
+        this.hit = -1;
+        //this.setValue(this.value);
+        this.changed();
     }
 
     draw() {
 
         this.ctx.clearRect(0,0,this.width,this.height)
 
-        if (this.getProp('bars')) {
-            this.draw_bars()
-        } else {
-            var points = this.draw_line()
-            if (this.getProp('dots')) {
-                this.draw_dots(points)
-            }
-        }
+        var points = this.draw_line()
+        this.draw_dots(points)
 
         if (this.getProp('pips')) this.draw_pips()
 
@@ -190,27 +348,6 @@ module.exports = class IPlot extends StaticProperties(Canvas, {bypass: true, int
             this.ctx.fill()
             this.ctx.stroke()
         }
-
-    }
-
-    draw_bars() {
-
-        var barWidth = Math.round(this.width / this.value.length),
-            offset = Math.round((this.width - barWidth * this.value.length) / 2)
-
-        var origin = mapToScale(this.getProp('origin') !== false ? this.getProp('origin') : this.rangeY.min, [this.rangeY.min,this.rangeY.max],[this.height,0],0,this.getProp('logScaleY'),true)
-
-        this.ctx.beginPath()
-
-        for (let i in this.value) {
-            var y = mapToScale(this.value[i].length ? this.value[i][1] : this.value[i],[this.rangeY.min,this.rangeY.max],[this.height-2*PXSCALE,2*PXSCALE],0,this.logScaleY,true)
-            this.ctx.rect(offset + i * barWidth, Math.min(y, origin), barWidth - PXSCALE, Math.abs(Math.min(y - origin)))
-
-        }
-
-        this.ctx.globalAlpha = 0.4
-        this.ctx.fillStyle = this.colors.custom
-        this.ctx.fill()
 
     }
 
