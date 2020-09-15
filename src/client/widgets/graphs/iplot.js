@@ -110,7 +110,27 @@ module.exports = class IPlot extends Canvas {
        return  [xa, xm, ya, ym];
     }
 
-    transform(pointsIn) {
+    fromLocalX(x) {
+        const [xa, xm, ya, ym] = this.transformCoefficients();
+        return xa * x + xm;
+    }
+
+    fromLocalY(y) {
+        const [xa, xm, ya, ym] = this.transformCoefficients();
+        return ya * y + ym;
+    }
+
+    toLocalX(x) {
+        const [xa, xm, ya, ym] = this.transformCoefficients();
+        return (x - xm) / xa;
+    }
+
+    toLocalY(y) {
+        const [xa, xm, ya, ym] = this.transformCoefficients();
+        return ( y - ym ) / ya;
+    }
+
+    fromLocalSpace(pointsIn) {
         // Assume the pointsIn is in a homogenious format either [[x0, y0],[x1, y1],...,[xn-1,yn-1]]
         //  or [x0, y0, x1, y1,...,xn-1,yn-1], the result is always in the second format.
 
@@ -132,7 +152,7 @@ module.exports = class IPlot extends Canvas {
         return pointsOut
     }
 
-    inverseTransform(pointsIn) {
+    toLocalSpace(pointsIn) {
         // Assume the pointsIn is in a homogenious format either [[x0, y0],[x1, y1],...,[xn-1,yn-1]]
         //  or [x0, y0, x1, y1,...,xn-1,yn-1], the result is always in the second format.
 
@@ -158,7 +178,7 @@ module.exports = class IPlot extends Canvas {
 
         if ( !this.value || this.value.length == 0 ) return;
 
-        var points = this.transform(this.value);
+        var points = this.fromLocalSpace(this.value);
         var length = points.length;
 
         for ( var i = 0; i < length; i += 2 ) {
@@ -183,7 +203,7 @@ module.exports = class IPlot extends Canvas {
                         this.value[j] =  this.value[j-1];
                     }
 
-                    [x, y] = this.inverseTransform( [ e.offsetX,  e.offsetY]);
+                    [x, y] = this.toLocalSpace( [ e.offsetX,  e.offsetY]);
                     this.value[this.hit] = [clamp(x, this.rangeX.min, this.rangeX.max),
                                             clamp(y, this.rangeY.min, this.rangeY.max)];
                     this.x0 = e.offsetX;
@@ -209,17 +229,24 @@ module.exports = class IPlot extends Canvas {
 
     dragHandle(e) {
 
-        if ( this.hit >= 0 ) {
-            var x, y;
-            var dx = (e.offsetX - this.x0);
-            var dy = (e.offsetY - this.y0);
-            [x, y] = this.transform(this.value[this.hit]);
-            [x, y] = this.inverseTransform( [x + dx, y + dy]);
-            this.value[this.hit][0] = clamp(x, this.rangeX.min, this.rangeX.max);
-            this.value[this.hit][1] = clamp(y, this.rangeY.min, this.rangeY.max);
-            this.x0 = e.offsetX;
-            this.y0 = e.offsetY;
-            this.batchDraw();
+        var x, y, dx, dy, xmin, xmax;
+        console.log(e);
+        if ( this.hit < 0 ) return;
+
+        dx = (e.offsetX - this.x0);
+        dy = (e.offsetY - this.y0);
+        [x, y] = this.fromLocalSpace(this.value[this.hit]);
+        [x, y] = this.toLocalSpace( [x + dx, y + dy]);
+        xmin = (this.hit > 0) ?  this.value[this.hit-1][0] : this.rangeX.min;
+        xmax = (this.hit <  this.value.length - 1) ?  this.value[this.hit+1][0] : this.rangeX.max;
+        console.log('x: ', x, xmin, xmax);
+        if ( x >= xmin && x <= xmax ) {
+          
+           this.value[this.hit][0] = clamp(x, this.rangeX.min, this.rangeX.max);
+           this.value[this.hit][1] = clamp(y, this.rangeY.min, this.rangeY.max);
+           this.x0 = e.offsetX;
+           this.y0 = e.offsetY;
+           this.batchDraw();
         }
     }
 

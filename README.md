@@ -4,6 +4,8 @@ Open Stage Control
 
 *Libre and modular OSC / MIDI controller*
 
+This forked version is developed by Peter Lundén. Adds interaction to the plot widget.
+
 https://openstagecontrol.ammd.net/
 
 ----
