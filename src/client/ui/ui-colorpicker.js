@@ -19,17 +19,17 @@ class ColorPicker extends UiWidget {
         this.rgb = new Rgb({props: {
             ...Rgb.defaults()._props(),
             type: 'rgb',
-            label: false,
             width: 'auto',
             height: 'auto',
             alphaStroke: 0,
             snap: true,
+            alpha: true
         }, parent: this})
         this.rgb.container.classList.add('not-editable')
 
         this.modal = new UiModal({
             width: 280,
-            height: 280,
+            height: 320,
             closable: true,
             title: '',
             hide: true,
@@ -108,7 +108,9 @@ class ColorPicker extends UiWidget {
 
     setValue(v) {
 
-        this.rgb.setValue(chroma(v).rgb())
+        if (v === 'transparent') v = '#00000000'
+
+        this.rgb.setValue(chroma(v).rgba())
 
     }
 

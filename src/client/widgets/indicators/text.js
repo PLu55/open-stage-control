@@ -20,7 +20,6 @@ module.exports = class Text extends StaticProperties(Widget, {bypass: true, inte
             vertical: {type: 'boolean', value: false, help: 'Set to `true` to display the text vertically'},
             wrap: {type: 'boolean', value: false, help: [
                 'Set to `true` to wrap long lines automatically.',
-                'This will not break overflowing words by default, word-breaking can be enabled by adding `word-break: break-all;` to the `css` property',
             ]},
             align: {type: 'string', value: 'center', choices: ['center', 'left', 'right'], help: 'Css text-align property.'},
 

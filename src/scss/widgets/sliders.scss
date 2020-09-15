@@ -17,6 +17,8 @@
     height: 200rem;
 
     --widget-padding: 1rem;
+    --knob-size: 1rem;
+    --line-width: 1rem;
 
     canvas {
         text-align: left;
@@ -28,17 +30,21 @@
     }
 
     &.design-default {
+        --knob-size: 20rem;
         --widget-padding: 10rem;
         --alpha-stroke: 0.5;
         --alpha-fill-off: 0.25;
         --alpha-fill-on: 1;
+        --line-width: 2rem
     }
 
     &.design-round {
+        --knob-size: 20rem;
         --widget-padding: 10rem;
         --alpha-stroke: 0.25;
         --alpha-fill-off: 0.25;
         --alpha-fill-on: 1;
+        --line-width: 2rem
     }
 
 }
@@ -52,10 +58,10 @@
     --widget-padding: 1rem;
     --alpha-stroke: 0.75;
 
-    &.design-classic {
-        --alpha-stroke: 0.5;
+    &.design-solid, &.design-line {
         --alpha-fill-off: 0.25;
         --alpha-fill-on: 1;
+        --line-width: 2rem;
     }
 
 }

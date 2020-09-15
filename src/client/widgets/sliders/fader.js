@@ -1,7 +1,7 @@
 var {clip} = require('../utils'),
     Slider = require('./slider')
 
-module.exports = class Fader extends Slider {
+class Fader extends Slider {
 
     static description() {
 
@@ -16,6 +16,7 @@ module.exports = class Fader extends Slider {
             _class_specific: 'fader',
 
             design: {type: 'string', value: 'default', choices: ['default', 'round', 'compact'], help: 'Design style'},
+            knobSize: {type: 'number', value: 'auto', help: 'Fader knob size'},
             horizontal: {type: 'boolean', value: false, help: 'Set to `true` to display the fader horizontally'},
             pips: {type: 'boolean', value: false, help: 'Set to `true` to show range breakpoints (ignored if `design` is `compact`)'},
             dashed: {type: 'boolean|array', value: false, help: 'Set to `true` to display a dashed gauge. Can be set as an `array` of two numbers : `[dash_size, gap_size]`'},
@@ -89,9 +90,12 @@ module.exports = class Fader extends Slider {
 
         super.dragHandle(...arguments)
 
+        var padding = this.gaugePadding
+        if (this.getProp('design') === 'compact') padding += this.cssVars.knobSize / 2
+
         this.percent = this.getProp('horizontal')?
-            this.percent + ( e.movementX / (this.width - this.gaugePadding * 2)) * 100 / e.inertia * this.getProp('sensitivity'):
-            this.percent + (-e.movementY / (this.height - this.gaugePadding * 2)) * 100  / e.inertia * this.getProp('sensitivity')
+            this.percent + ( e.movementX / (this.width - padding * 2)) * 100 / e.inertia * this.getProp('sensitivity'):
+            this.percent + (-e.movementY / (this.height - padding * 2)) * 100  / e.inertia * this.getProp('sensitivity')
 
         this.setValue(this.percentToValue(this.percent), {send:true,sync:true,dragged:true})
 
@@ -180,7 +184,8 @@ module.exports = class Fader extends Slider {
             o = Math.round(this.percentToCoord(this.valueToPercent(this.originValue))),
             m = this.getProp('horizontal') ? this.height / 2 : this.width / 2,
             dashed = this.dashed,
-            compact = this.getProp('design') === 'compact'
+            compact = this.getProp('design') === 'compact',
+            knobHeight = this.cssVars.knobSize, knobWidth = knobHeight * .6
 
         this.clear()
 
@@ -199,7 +204,7 @@ module.exports = class Fader extends Slider {
         if (compact) {
             this.ctx.lineWidth = Math.round(width - this.gaugePadding * 2)
         } else {
-            this.ctx.lineWidth = 2 * PXSCALE
+            this.ctx.lineWidth = this.cssVars.lineWidth
         }
 
 
@@ -230,18 +235,21 @@ module.exports = class Fader extends Slider {
         if (compact) {
 
             // stroke
+            if (this.cssVars.lineWidth) {
 
-            this.ctx.globalAlpha = this.cssVars.alphaStroke
-            this.ctx.strokeStyle = this.cssVars.colorStroke
+                this.ctx.globalAlpha = this.cssVars.alphaStroke
+                this.ctx.strokeStyle = this.cssVars.colorStroke
 
-            this.ctx.beginPath()
-            this.ctx.moveTo(0, 0)
-            this.ctx.lineTo(width, 0)
-            this.ctx.lineTo(width, height)
-            this.ctx.lineTo(0, height)
-            this.ctx.closePath()
-            this.ctx.lineWidth = 2 * PXSCALE
-            this.ctx.stroke()
+                this.ctx.beginPath()
+                this.ctx.moveTo(0, 0)
+                this.ctx.lineTo(width, 0)
+                this.ctx.lineTo(width, height)
+                this.ctx.lineTo(0, height)
+                this.ctx.closePath()
+                this.ctx.lineWidth = 2 * this.cssVars.lineWidth
+                this.ctx.stroke()
+
+            }
 
 
             // flat knob
@@ -250,7 +258,8 @@ module.exports = class Fader extends Slider {
             this.ctx.fillStyle = this.cssVars.colorFill
 
             this.ctx.beginPath()
-            this.ctx.rect(this.gaugePadding, Math.min(d, height - this.gaugePadding - PXSCALE), width - this.gaugePadding * 2, PXSCALE)
+            d = d / (height - this.gaugePadding) * (height-this.gaugePadding - knobHeight)
+            this.ctx.rect(this.gaugePadding, d, width - this.gaugePadding * 2, knobHeight)
             this.ctx.fill()
 
             this.clearRect = [0, 0, width, height]
@@ -265,7 +274,7 @@ module.exports = class Fader extends Slider {
                 this.ctx.fillStyle = this.cssVars.colorBg
 
                 this.ctx.beginPath()
-                this.ctx.rect(m - 6 * PXSCALE, d - 10 * PXSCALE, 12 * PXSCALE, 20 * PXSCALE)
+                this.ctx.rect(m - knobWidth / 2, d - knobHeight / 2, knobWidth, knobHeight)
                 this.ctx.fill()
 
 
@@ -274,7 +283,7 @@ module.exports = class Fader extends Slider {
 
                 this.ctx.beginPath()
                 this.ctx.lineWidth = PXSCALE
-                this.ctx.rect(m - 5.5 * PXSCALE, d - 9.5 * PXSCALE, 11 * PXSCALE, 19 * PXSCALE)
+                this.ctx.rect(m - knobWidth / 2 + 0.5 * PXSCALE, d - knobHeight / 2  + 0.5 * PXSCALE, knobWidth - PXSCALE, knobHeight - PXSCALE)
                 this.ctx.stroke()
 
             }
@@ -283,10 +292,10 @@ module.exports = class Fader extends Slider {
             this.ctx.fillStyle = this.cssVars.colorStroke
 
             this.ctx.beginPath()
-            this.ctx.rect(m - 3 * PXSCALE, d, 6 * PXSCALE, PXSCALE)
+            this.ctx.rect(m - knobWidth / 6, d, knobWidth / 3, PXSCALE)
             this.ctx.fill()
 
-            this.clearRect = [m - 10 * PXSCALE, this.gaugePadding - 10 * PXSCALE, 20 * PXSCALE, height - 2 * this.gaugePadding + 20 * PXSCALE]
+            this.clearRect = [m - knobWidth / 2 - PXSCALE, this.gaugePadding - knobHeight / 2  - PXSCALE, knobWidth + 2 * PXSCALE, height - 2 * this.gaugePadding + knobHeight + 2 * PXSCALE]
 
         } else {
 
@@ -294,7 +303,7 @@ module.exports = class Fader extends Slider {
             this.ctx.fillStyle = this.cssVars.colorFill
 
             this.ctx.beginPath()
-            this.ctx.arc(m, d, 3 * PXSCALE, 0, 2 * Math.PI)
+            this.ctx.arc(m, d, knobHeight / 6, 0, 2 * Math.PI)
             this.ctx.fill()
 
 
@@ -303,18 +312,18 @@ module.exports = class Fader extends Slider {
                 this.ctx.fillStyle = this.cssVars.colorFill
 
                 this.ctx.beginPath()
-                this.ctx.arc(m, d, 9 * PXSCALE, 0, 2 * Math.PI)
+                this.ctx.arc(m, d, knobHeight / 2, 0, 2 * Math.PI)
                 this.ctx.fill()
             }
 
-            this.clearRect = [m - 11 * PXSCALE, this.gaugePadding - 11 * PXSCALE, 22 * PXSCALE, height - 2 * this.gaugePadding + 22 * PXSCALE]
+            this.clearRect = [m - knobHeight / 2 - PXSCALE, this.gaugePadding - knobHeight / 2  - PXSCALE, knobHeight + 2 * PXSCALE, height - 2 * this.gaugePadding + knobHeight + 2 * PXSCALE]
 
         }
 
         if (this.getProp('pips') && !compact) {
             this.ctx.globalAlpha = 1
             this.ctx.drawImage(this.pips, 0, 0)
-            if (!compact) this.clearRect = [this.clearRect, [m + 10 * PXSCALE, 0, 10 * PXSCALE + this.pipsTextSize, height]]
+            if (!compact) this.clearRect = [this.clearRect, [m + knobWidth / 2, 0, 12 * PXSCALE + this.pipsTextSize, height]]
         }
 
 
@@ -346,10 +355,10 @@ module.exports = class Fader extends Slider {
 
         if (width % 2 && parseInt(m) !== m) m -= 0.5
 
-        if (!compact) m -= 10 * PXSCALE
+        if (!compact) m -= 16 * PXSCALE - this.cssVars.knobSize * .3 * PXSCALE
 
 
-        ctx.lineWidth = PXSCALE
+        ctx.lineWidth = this.fontSize / 11
         ctx.fillStyle = this.cssVars.colorText
         ctx.strokeStyle = this.cssVars.colorFill
 
@@ -404,3 +413,10 @@ module.exports = class Fader extends Slider {
     }
 
 }
+
+
+Fader.cssVariables = Fader.prototype.constructor.cssVariables.concat(
+    {js: 'knobSize', css: '--knob-size', toCss: x=>parseFloat(x) + 'rem', toJs: x=>parseFloat(x) * PXSCALE}
+)
+
+module.exports = Fader

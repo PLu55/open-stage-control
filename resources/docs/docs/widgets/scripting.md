@@ -146,3 +146,15 @@ Returns the scroll state of a container as a `[x, y]` array.
 - `y`: vertical scroll, `undefined` to use current value
 
 Sets the scroll state of a container.
+
+----
+
+#### `toolbar(i1, i2, ...)`
+- `iX`: menu entry index
+
+Trigger toolbar action at specified index. Examples:
+
+- `toolbar(0, 0)` -> Open a new session
+- `toolbar(3)` -> Toggle full screen
+
+Actions will only be triggered if initiated with a user interaction. Fullscreen cannot be toggled with a simulated interaction (i.e. using `/SET`)

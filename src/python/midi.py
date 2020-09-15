@@ -2,7 +2,7 @@ from head import *
 from list import *
 from utils import *
 
-ipc_send('version', '1.0.0')
+ipc_send('version', '1.1.0')
 
 if 'list' in argv:
     list()

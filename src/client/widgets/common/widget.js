@@ -80,6 +80,7 @@ class Widget extends EventEmitter {
             alphaFillOff: {type: 'number', value: 'auto', help: 'Fill color opacity (off).'},
             alphaFillOn: {type: 'number', value: 'auto', help: 'Fill color opacity (on).'},
 
+            lineWidth: {type: 'number', value: 'auto', help: 'Stroke width.'},
             padding: {type: 'number', value: 'auto', help: 'Inner spacing.'},
 
 
@@ -817,6 +818,7 @@ class Widget extends EventEmitter {
             case 'alphaStroke':
             case 'alphaFillOff':
             case 'alphaFillOn':
+            case 'lineWidth':
             case 'padding':
                 this.setCssVariables()
                 return
@@ -1038,6 +1040,7 @@ Widget.cssVariables = [
     {js: 'colorStroke', css: '--color-stroke'},
     {js: 'colorText', css: '--color-text'},
     {js: 'padding', css: '--widget-padding', toCss: x=>parseFloat(x) + 'rem', toJs: x=>parseFloat(x) * PXSCALE},
+    {js: 'lineWidth', css: '--line-width', toCss: x=>parseFloat(x) + 'rem', toJs: x=>parseFloat(x) * PXSCALE},
     {js: 'alphaFillOn', css: '--alpha-fill-on', toCss: x=>parseFloat(x), toJs: x=>parseFloat(x)},
     {js: 'alphaFillOff', css: '--alpha-fill-off', toCss: x=>parseFloat(x), toJs: x=>parseFloat(x)},
     {js: 'alphaStroke', css: '--alpha-stroke', toCss: x=>parseFloat(x), toJs: x=>parseFloat(x)},
@@ -1062,6 +1065,7 @@ Widget.dynamicProps = [
     'alphaFillOff',
     'alphaFillOn',
     'padding',
+    'lineWidth',
     'css',
 
     'value',

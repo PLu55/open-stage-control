@@ -15,6 +15,10 @@ module.exports = class Knob extends Slider {
 
             _class_specific: 'knob',
 
+            design: {type: 'string', value: 'default', choices: ['default', 'solid', 'line'], help: [
+                'Design style',
+                'Note: "solid" design uses "colorStroke" for the central knob color.'
+            ]},
             mode: {type: 'string', value: 'vertical', choices: ['vertical', 'circular', 'snap'], help: [
                 '- `circular`: relative move in circular motion',
                 '- `snap`: snap to touch position and move in vertical motion',
@@ -22,7 +26,7 @@ module.exports = class Knob extends Slider {
             ]},
             spring: {type: 'boolean', value: false, help: 'When set to `true`, the widget will go back to its `default` value when released'},
             pips: {type: 'boolean', value: false, help: 'Set to `true` to show the scale\'s breakpoints'},
-            dashed: {type: 'boolean', value: false, help: 'Set to `true` to display a dashed gauge'},
+            dashed: {type: 'boolean|array', value: false, help: 'Set to `true` to display a dashed gauge. Can be set as an `array` of two numbers : `[dash_size, gap_size]`'},
             angle: {type: 'number', value: 270, help: 'Defines the angle\'s width of the knob, in degrees'},
             doubleTap: {type: 'boolean', value: false, help: [
                 'Set to `true` to make the knob reset to its `default` value when receiving a double tap.',
@@ -172,146 +176,177 @@ module.exports = class Knob extends Slider {
             max = this.percentToAngle(100),
             dashed = this.getProp('dashed'),
             pips = this.getProp('pips'),
-            minRadius = this.minDimension / 6 - (pips ? this.fontSize * 0.75 : PXSCALE),
-            maxRadius = this.minDimension / 2 - (pips ? this.fontSize * 2 : PXSCALE)
+            minRadius = this.minDimension / 6 - (pips ? this.fontSize * 0.75 : 0) - this.cssVars.lineWidth / 2,
+            maxRadius = this.minDimension / 2 - (pips ? this.fontSize * 2 : 0) - this.cssVars.lineWidth / 2
+
+        if (dashed) dashed = Array.isArray(dashed) ? dashed.map(x=>parseFloat(x)) : [1.5, 1.5]
 
         var gaugeWidth = maxRadius - minRadius,
             gaugeRadius = maxRadius - gaugeWidth / 2
 
         this.clear()
 
-        // if (this.getProp('design') === 'default') {
+        if (this.getProp('design') === 'default') {
 
-        if (this.minDimension < 40) {
-            minRadius /= 2
-            gaugeWidth = maxRadius - minRadius
-            gaugeRadius = maxRadius - gaugeWidth / 2
-        }
+            if (this.minDimension < 40) {
+                minRadius /= 2
+                gaugeWidth = maxRadius - minRadius
+                gaugeRadius = maxRadius - gaugeWidth / 2
+            }
 
-        // fill
-        this.ctx.strokeStyle = this.cssVars.colorFill
-        this.ctx.lineWidth = gaugeWidth - this.gaugePadding * 2
+            // fill
+            this.ctx.strokeStyle = this.cssVars.colorFill
+            this.ctx.lineWidth = gaugeWidth - this.gaugePadding * 2
 
-        if (this.cssVars.alphaFillOff) {
-            this.ctx.globalAlpha = this.cssVars.alphaFillOff
+            if (this.cssVars.alphaFillOff) {
+                this.ctx.globalAlpha = this.cssVars.alphaFillOff
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, gaugeRadius, min, max)
+                this.ctx.stroke()
+            }
+
+            if (dashed) this.ctx.setLineDash(dashed)
+
+            if (this.cssVars.alphaFillOn) {
+                this.ctx.globalAlpha = this.cssVars.alphaFillOn
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, gaugeRadius, o, d, o > d)
+                this.ctx.stroke()
+            }
+
+            if (dashed) this.ctx.setLineDash([])
+
+
+            // stroke
+            if (this.cssVars.lineWidth) {
+                this.ctx.globalAlpha = this.cssVars.alphaStroke
+                this.ctx.strokeStyle = this.cssVars.colorStroke
+                this.ctx.lineWidth = this.cssVars.lineWidth
+
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, maxRadius, 0, 2 * Math.PI)
+                this.ctx.stroke()
+            }
+
+
+            // knob
+
+            this.ctx.globalAlpha = 1
+            this.ctx.strokeStyle = this.cssVars.colorFill
+            this.ctx.lineWidth = this.cssVars.lineWidth + .5 * PXSCALE
+
+            let r1 = minRadius + this.gaugePadding,
+                r2 = maxRadius - this.gaugePadding,
+                a  = 2 * Math.PI - d
+
             this.ctx.beginPath()
-            this.ctx.arc(this.width / 2, this.height / 2, gaugeRadius, min, max)
+            this.ctx.moveTo(r1 * Math.cos(a) + this.width / 2, this.height / 2 - r1 * Math.sin(a))
+            this.ctx.lineTo(r2 * Math.cos(a) + this.width / 2, this.height / 2 - r2 * Math.sin(a))
             this.ctx.stroke()
-        }
 
-        if (dashed) this.ctx.setLineDash([1.5 * PXSCALE, 1.5 * PXSCALE])
+        } else if (this.getProp('design') === 'solid') {
 
-        if (this.cssVars.alphaFillOn) {
-            this.ctx.globalAlpha = this.cssVars.alphaFillOn
+            // center
+
+            this.ctx.globalAlpha = this.cssVars.alphaStroke
+            this.ctx.fillStyle = this.cssVars.colorStroke
+
             this.ctx.beginPath()
-            this.ctx.arc(this.width / 2, this.height / 2, gaugeRadius, o, d, o > d)
+            this.ctx.arc(this.width / 2, this.height / 2, maxRadius / 1.25, 0, 2 * Math.PI)
+            this.ctx.fill()
+
+            // fill
+            this.ctx.strokeStyle = this.cssVars.colorFill
+            this.ctx.lineWidth = this.cssVars.lineWidth
+
+            if (this.cssVars.alphaFillOff) {
+                this.ctx.globalAlpha = this.cssVars.alphaFillOff
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, maxRadius, min, max)
+                this.ctx.stroke()
+            }
+
+            if (dashed) this.ctx.setLineDash(dashed)
+
+            if (this.cssVars.alphaFillOn) {
+                this.ctx.globalAlpha = this.cssVars.alphaFillOn
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, maxRadius, o, d, o > d)
+                this.ctx.stroke()
+            }
+
+            if (dashed) this.ctx.setLineDash([])
+
+            // knob
+
+            this.ctx.globalAlpha = 1
+            this.ctx.strokeStyle = this.cssVars.colorBg
+            this.ctx.lineWidth = this.cssVars.lineWidth + .5 * PXSCALE
+
+            let r1 = minRadius,
+                r2 = maxRadius / 1.25 + PXSCALE ,
+                a  = 2 * Math.PI - d
+
+            this.ctx.beginPath()
+            this.ctx.moveTo(r1 * Math.cos(a) + this.width / 2, this.height / 2 - r1 * Math.sin(a))
+            this.ctx.lineTo(r2 * Math.cos(a) + this.width / 2, this.height / 2 - r2 * Math.sin(a))
             this.ctx.stroke()
+
+
+
+        } else {
+
+            // fill
+            this.ctx.strokeStyle = this.cssVars.colorFill
+            this.ctx.lineWidth = this.cssVars.lineWidth
+
+            if (this.cssVars.alphaFillOff) {
+                this.ctx.globalAlpha = this.cssVars.alphaFillOff
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, maxRadius, min, max)
+                this.ctx.stroke()
+            }
+
+            if (dashed) this.ctx.setLineDash(dashed)
+
+            if (this.cssVars.alphaFillOn) {
+                this.ctx.globalAlpha = this.cssVars.alphaFillOn
+                this.ctx.beginPath()
+                this.ctx.arc(this.width / 2, this.height / 2, maxRadius, o, d, o > d)
+                this.ctx.stroke()
+            }
+
+            if (dashed) this.ctx.setLineDash([])
+
+            // knob
+
+            this.ctx.globalAlpha = 1
+            this.ctx.strokeStyle = this.cssVars.colorFill
+            this.ctx.lineWidth = this.cssVars.lineWidth
+
+            let r1 = minRadius * 1.5,
+                r2 = maxRadius + this.cssVars.lineWidth / 2 - 0.5 * PXSCALE,
+                a  = 2 * Math.PI - d
+
+            this.ctx.beginPath()
+            this.ctx.moveTo(r1 * Math.cos(a) + this.width / 2, this.height / 2 - r1 * Math.sin(a))
+            this.ctx.lineTo(r2 * Math.cos(a) + this.width / 2, this.height / 2 - r2 * Math.sin(a))
+            this.ctx.stroke()
+
         }
-
-        if (dashed) this.ctx.setLineDash([])
-
-
-        // stroke
-
-        this.ctx.globalAlpha = this.cssVars.alphaStroke
-        this.ctx.strokeStyle = this.cssVars.colorStroke
-        this.ctx.lineWidth = PXSCALE
-        //
-        // if (this.minDimension > 40) {
-        //     this.ctx.beginPath()
-        //     this.ctx.arc(this.width / 2, this.height / 2, minRadius, 0, 2 * Math.PI)
-        //     this.ctx.stroke()
-        // }
-
-
-        this.ctx.beginPath()
-        this.ctx.arc(this.width / 2, this.height / 2, maxRadius, 0, 2 * Math.PI)
-        this.ctx.stroke()
-
-
-        // knob
-
-        this.ctx.globalAlpha = 1
-        this.ctx.strokeStyle = this.cssVars.colorFill
-        this.ctx.lineWidth = 1.5 * PXSCALE
-
-        let r1 = minRadius + this.gaugePadding,
-            r2 = maxRadius - this.gaugePadding,
-            a  = 2 * Math.PI - d
-
-        this.ctx.beginPath()
-        this.ctx.moveTo(r1 * Math.cos(a) + this.width / 2, this.height / 2 - r1 * Math.sin(a))
-        this.ctx.lineTo(r2 * Math.cos(a) + this.width / 2, this.height / 2 - r2 * Math.sin(a))
-        this.ctx.stroke()
-
-        // } else {
-        //
-        //     // fill
-        //     this.ctx.strokeStyle = this.cssVars.colorFill
-        //     this.ctx.lineWidth = 2 * PXSCALE
-        //
-        //     if (this.cssVars.alphaFillOff) {
-        //         this.ctx.globalAlpha = this.cssVars.alphaFillOff
-        //         this.ctx.beginPath()
-        //         this.ctx.arc(this.width / 2, this.height / 2, maxRadius, min, max)
-        //         this.ctx.stroke()
-        //     }
-        //
-        //     if (dashed) this.ctx.setLineDash([1.5 * PXSCALE, 1.5 * PXSCALE])
-        //
-        //     if (this.cssVars.alphaFillOn) {
-        //         this.ctx.globalAlpha = this.cssVars.alphaFillOn
-        //         this.ctx.beginPath()
-        //         this.ctx.arc(this.width / 2, this.height / 2, maxRadius, o, d, o > d)
-        //         this.ctx.stroke()
-        //     }
-        //
-        //     if (dashed) this.ctx.setLineDash([])
-        //
-        //
-        //
-        //     // center
-        //     this.ctx.fillStyle = this.cssVars.colorBg
-        //     this.ctx.strokeStyle = this.cssVars.colorStroke
-        //     this.ctx.lineWidth = 1 * PXSCALE
-        //
-        //     this.ctx.beginPath()
-        //     this.ctx.arc(this.width / 2, this.height / 2, maxRadius - (2 + this.cssVars.padding) * PXSCALE, 0, 2 * Math.PI)
-        //     this.ctx.globalAlpha = this.cssVars.alphaStroke
-        //     this.ctx.stroke()
-        //     this.ctx.globalAlpha = 1
-        //     // this.ctx.fill()
-        //
-        //
-        //
-        //     // knob
-        //     this.ctx.globalAlpha = 1
-        //     this.ctx.fillStyle = this.cssVars.colorFill
-        //     this.ctx.lineWidth = 1.5 * PXSCALE
-        //
-        //     let r1 = maxRadius - (8 + this.cssVars.padding) * PXSCALE,
-        //         a  = 2 * Math.PI - d
-        //
-        //     this.ctx.beginPath()
-        //     this.ctx.arc(r1 * Math.cos(a) + this.width / 2, this.height / 2 - r1 * Math.sin(a), 1.5 * PXSCALE, 0, 2*Math.PI)
-        //     this.ctx.fill()
-        //
-        //
-        // }
-
 
 
         // pips
 
         if (pips) {
 
-            this.ctx.lineWidth = 1.5 * PXSCALE
+            this.ctx.lineWidth = this.fontSize / 11 * 1.5
             this.ctx.strokeStyle = this.cssVars.colorStroke
             this.ctx.globalAlpha = this.cssVars.alphaPips
 
             for (var pip of this.rangeKeys) {
 
-                let r1 = maxRadius + 2 * PXSCALE,
+                let r1 = maxRadius + this.cssVars.lineWidth / 2 + 2 * PXSCALE,
                     r2 = r1 + 4 * PXSCALE,
                     a = 2 * Math.PI - this.percentToAngle(pip)
 
@@ -322,8 +357,7 @@ module.exports = class Knob extends Slider {
                 this.ctx.stroke()
 
             }
-
-            var radius = maxRadius + (this.fontSize + 4 * PXSCALE)
+            var radius = maxRadius + (this.fontSize + this.cssVars.lineWidth / 2 + 2 * PXSCALE)
             this.ctx.fillStyle = this.cssVars.colorText
             this.ctx.globalAlpha = this.cssVars.alphaPipsText
             for (var p in this.pipTexts) {

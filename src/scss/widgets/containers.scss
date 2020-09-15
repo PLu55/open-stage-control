@@ -188,7 +188,7 @@
     &.contains-widgets {
 
         > inner {
-            margin: calc(var(--widget-spacing) + 1rem);
+            margin: calc(var(--widget-spacing) + var(--line-width));
         }
 
         &.no-inner-padding > inner {
@@ -300,10 +300,10 @@
                 z-index: 101;
             }
             &:first-child:before {
-                margin-left: 1rem;
+                margin-left: var(--line-width);
             }
             &:last-child:before {
-                margin-right: 1rem;
+                margin-right: var(--line-width);
             }
 
         }
@@ -336,11 +336,11 @@
                 z-index: 101;
             }
             &:first-child:before {
-                margin-top: 1rem;
+                margin-top: var(--line-width);
                 margin-left: 0;
             }
             &:last-child:before {
-                margin-bottom: 1rem;
+                margin-bottom: var(--line-width);
                 margin-right: 0;
             }
         }
@@ -533,6 +533,7 @@
 .patchbaynode-container {
 
     justify-content: center;
+    background: transparent;
 
 }
 .patchbay-container {
@@ -555,21 +556,23 @@
             display: flex;
             flex-direction: column;
             align-items:stretch;
-            margin-bottom: 1rem;
+            margin-bottom: var(--line-width);
             width: 25%;
         }
 
         .inputs, .outputs {
             position: relative;
             @include pseudo-stroke();
-            top: 1rem;
+            top: var(--line-width);
+            margin-top: -1rem;
+            height: calc(100% - var(--line-width) * 2 + 2rem);
         }
 
         .inputs:before {
-            border-width: 0 1rem 0 0;
+            border-width: 0 var(--line-width) 0 0;
         }
         .outputs:before {
-            border-width: 0 0 0 1rem;
+            border-width: 0 0 0 var(--line-width);
         }
     }
 
@@ -603,11 +606,11 @@
     --color-white-key: #ccc;
     --color-black-key: #1A1A1A;
 
-    --widget-keypad: var(--widget-padding);
+    --widget-keypad:  calc(var(--widget-padding) + var(--line-width));
 
     > inner {
 
-        padding: var(--widget-padding);
+        padding: calc(var(--widget-padding) + var(--line-width));
         flex: 1;
         @include pseudo-stroke($z: 2);
         position: relative;
@@ -620,6 +623,7 @@
 
         --alpha-fill-off: var(--alpha-key-off);
         --alpha-fill-on: var(--alpha-key-on);
+        --line-width: 0!important;
         inner {
             margin: 1rem 0.5rem!important;
             --widget-padding: -1rem;

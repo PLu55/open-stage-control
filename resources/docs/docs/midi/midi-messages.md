@@ -69,3 +69,25 @@ System exclusive message.
 
 - `msg`: hexadecimal sysex data string of the form `f0 ... f7`. You may include placeholders of the form `nn` which will be replaced by `v1, .., vN` respectively.
 - `v1, .., vN`: values encoded as hexadecimal data strings to include in `msg`. Most probably, you will need to sepcify a [custom module](/docs/custom-module/) in order to convert numeric widget values into the required hexadecimal format. In general, this conversion will be different for each manufacturer / device.
+
+----
+
+#### `/channel_pressure channel pressure`
+
+Channel pressure event.
+
+- `channel`: integer between 1 and 16
+- `pressure`: integer between 0 and 127
+
+----
+
+
+#### `/key_pressure channel note pressure`
+
+Polyphonic key pressure event.
+
+- `channel`: integer between 1 and 16
+- `note`: integer between 0 and 127
+- `pressure`: integer between 0 and 127
+
+----

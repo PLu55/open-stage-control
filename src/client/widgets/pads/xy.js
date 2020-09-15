@@ -229,8 +229,8 @@ module.exports = class Xy extends Pad {
                 }
 
                 if (pip == 0 || pip == 100) continue
-                this.ctx.moveTo(px, margin)
-                this.ctx.lineTo(px, this.height - margin)
+                this.ctx.moveTo(px, margin - PXSCALE)
+                this.ctx.lineTo(px, this.height - margin + PXSCALE)
                 pipsDrawn = true
 
 
@@ -250,8 +250,8 @@ module.exports = class Xy extends Pad {
                 }
 
                 if (pip == 0 || pip == 100) continue
-                this.ctx.moveTo(margin, py)
-                this.ctx.lineTo(this.width - margin, py)
+                this.ctx.moveTo(margin - PXSCALE, py)
+                this.ctx.lineTo(this.width - margin + PXSCALE, py)
                 pipsDrawn = true
 
 

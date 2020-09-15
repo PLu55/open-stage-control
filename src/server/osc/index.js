@@ -21,22 +21,14 @@ class OscServer {
         this.customModule = (()=>{
 
             var customModule = settings.read('custom-module')
-            if (!customModule) return false
 
-            // consolidate path containing whitespaces
-            if (!customModule[0].includes('.js')) {
-                var index = customModule.findIndex(x => typeof x === 'string' && x.includes('.js'))
-                if (index !== undefined) {
-                    var _path = customModule.slice(0, index + 1).join(' ')
-                    customModule.splice(0, index + 1, _path)
-                }
-            }
+            if (!customModule) return false
 
             var file = (()=>{
                     try {
-                        return fs.readFileSync(customModule[0], 'utf8')
+                        return fs.readFileSync(customModule, 'utf8')
                     } catch(err) {
-                        console.error('(ERROR) Custom module not found: ' + customModule[0])
+                        console.error('(ERROR) Custom module not found: ' + customModule)
                         return false
                     }
                 })(),
@@ -66,7 +58,7 @@ class OscServer {
                     loadJSON: (url)=>{
                         if (url.split('.').pop() === 'json') {
                             try {
-                                url = path.resolve(path.dirname(customModule[0]), url)
+                                url = path.resolve(path.dirname(customModule), url)
                                 return JSON.parse(fs.readFileSync(url, 'utf8'))
                             } catch(e) {
                                 console.error('(ERROR) could not load json file from ' + url)
@@ -78,7 +70,7 @@ class OscServer {
                     },
                     saveJSON: (url, data)=>{
                         if (url.split('.').pop() === 'json') {
-                            url = path.resolve(path.dirname(customModule[0]), url)
+                            url = path.resolve(path.dirname(customModule), url)
                             try {
                                 return fs.writeFileSync(url, JSON.stringify(data, null, '  '))
                             } catch(e) {
@@ -93,7 +85,6 @@ class OscServer {
                     setTimeout, clearTimeout,
                     setInterval, clearInterval,
                     settings,
-                    options: customModule.slice(1, customModule.length),
                     module: {},
                 })
 
@@ -103,7 +94,7 @@ class OscServer {
                 process.mainModule.require = process.dlopen = null
                 // run
                 mod = vm.runInContext(file, context, {
-                    filename: customModule[0]
+                    filename: customModule
                 })
                 if (context.module.exports) mod = context.module.exports
             } catch(err) {

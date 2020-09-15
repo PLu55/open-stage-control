@@ -10,9 +10,8 @@
         position: relative;
         flex: 1;
         display: flex;
-        padding: var(--widget-padding);
+        padding: calc(var(--widget-spacing) + var(--line-width));
         background-clip: content-box;
-
         @include pseudo-stroke();
     }
 

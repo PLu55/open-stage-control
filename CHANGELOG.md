@@ -1,5 +1,45 @@
 # Changelog
 
+## next
+
+- scripting
+  - expose toolbar menu actions
+
+- remote control
+  - optimise small changes made with /EDIT
+
+- widgets
+  - button: add `wrap` and `vertical` properties  
+
+## 1.2.0
+
+- bug fixes
+  - editor: id not incremented when pasting multiple widgets with id+1
+
+- main
+  - remove support for extra args in the `custom-module` option (fixes some path issues)
+
+- widgets
+  - all: add `lineWidth` style property
+  - knob: add `solid` & `line` designs
+  - fader: add `knobSize` property
+
+- editor
+  - preserve percentages in position/size
+  - add 'Relative units (%)' option to use percents automatically on new widgets
+
+## 1.1.0
+
+- bug fixes
+  - iOS 14+ scrolling issue
+
+- midi
+  - add support for channel pressure and key pressure messages
+
+- widgets
+  - svg: remove support for non-standard `%x` and `%y` units; fixed layout update when resized;
+  - knob: add support for custom dash/gap size in `dashed` property
+
 ## 1.0.4
 
 - bug fixes

@@ -19,9 +19,7 @@ class Svg extends StaticProperties(Widget, {bypass: true}) {
             _class_specific: 'svg',
 
             svg: {type: 'string', value: '', help: [
-                'Svg xml definition:',
-                '- will be wrapped in a `< svg />` element',
-                '- `<path>` commands support a special percent notation (`%x` and `%y`)'
+                'Svg xml definition (will be wrapped in a `< svg />` element)',
             ]},
 
         }, ['decimals', 'bypass'], {})
@@ -47,22 +45,24 @@ class Svg extends StaticProperties(Widget, {bypass: true}) {
 
     }
 
-    updateSvg(){
+    updateSvg(force){
 
         if (!this.width || !this.height) return
 
         var svg = this.getProp('svg')
 
-        svg = svg.replace(/<\/svg>/gi, 'x')
-        svg = svg.replace(/([0-9.]+%x)/gi, m=>(parseFloat(m) * this.width / 100).toFixed(2))
-        svg = svg.replace(/([0-9.]+%y)/gi, m=>(parseFloat(m) * this.height / 100).toFixed(2))
-
+        this.frame.setAttribute('width', this.width)
+        this.frame .setAttribute('height', this.height)
 
         var node = this.frame.cloneNode(false)
 
         node.innerHTML = svg
 
-        morph(this.frame, node)
+        if (force) {
+            this.frame.innerHTML = node.innerHTML
+        } else {
+            morph(this.frame, node)
+        }
 
     }
 
@@ -79,7 +79,7 @@ class Svg extends StaticProperties(Widget, {bypass: true}) {
         this.height = height
         this.width = width
 
-        this.updateSvg()
+        this.updateSvg(true)
 
     }
 

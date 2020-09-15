@@ -6,6 +6,7 @@ module.exports = {
     editor_grid: 'Grid',
     editor_tree: 'Project tree',
     editor_inspector: 'Inspector',
+    editor_percents: 'Relative units (%)',
 
     // editor context-menu
     editor_show_in_tree: 'Show in tree',
@@ -27,6 +28,7 @@ module.exports = {
     // file
     file_open: 'Open',
     file_open_recent: 'Open recent',
+    file_open_recent_wait: 'List not loaded yet, please close and reopen the menu',
     file_save: 'Save',
     file_save_as: 'Save as...',
     file_import: 'Import',

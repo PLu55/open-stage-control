@@ -2,7 +2,7 @@
 
 var iOS13 = (
         navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1 // iPad
-        || navigator.userAgent.match(/iPhone OS 13/) // iPhone
+        || navigator.userAgent.match(/iPhone OS (1[3-9])/) // iPhone
     ),
     iOS = navigator.platform.match(/iPhone|iPod|iPad/) || iOS13
 

@@ -12,16 +12,16 @@ The **server** can be configured with many options, either from a terminal or wi
 
     ===  "load"
 
-        Path to a session file. All clients connecting the server will load it.
+        Path to a session file (.json). All clients connecting the server will load it.
 
     ===  "state"
 
-        Path to a state file. All clients connecting the server will load it.
+        Path to a state file (.state). All clients connecting the server will load it.
 
 
     ===  "custom-module"
 
-        Path to a custom module file. Additional options can be passed after the path, they'll be accessible in the custom module's context.
+        Path to a custom module file (.js).
 
 
     ===  "port"

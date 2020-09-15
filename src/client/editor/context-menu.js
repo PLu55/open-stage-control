@@ -150,11 +150,20 @@ var handleClick = function(event) {
                             newData.left= clickX
                         }
 
+                        if (editor.usePercents) {
+                            newData.top = (100 * clickY / editor.selectedWidgets[0].widget.offsetHeight).toFixed(2) + '%'
+                            newData.left= (100 * clickX / editor.selectedWidgets[0].widget.offsetWidth).toFixed(2) + '%'
+                            newData.height= '6%'
+                            newData.width = '8%'
+                        }
+
                         data[0].widgets = data[0].widgets || []
                         data[0].widgets.push(newData)
 
                         var indexes = {addedIndexes: [data[0].widgets.length -1]}
                         updateWidget(editor.selectedWidgets[0], indexes)
+
+
                         editor.pushHistory(indexes)
 
                     }

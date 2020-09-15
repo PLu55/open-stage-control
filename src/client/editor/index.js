@@ -127,6 +127,7 @@ class Editor {
             this.idClipboard = data.idClipboard
         })
 
+        this.usePercents = false
 
         this.enabled = false
         this.grid = true
@@ -528,7 +529,7 @@ class Editor {
             minLeft = Infinity
 
         if (increment) {
-            pastedData = pastedData.map(x=>incrementWidget(x))
+            pastedData = incrementWidget(pastedData)
         }
 
 
@@ -536,20 +537,40 @@ class Editor {
 
             for (let i in pastedData) {
 
-                if (!isNaN(pastedData[i]).top && pastedData[i].top < minTop) {
-                    minTop = pastedData[i].top
+                let top = pastedData[i].top,
+                    left = pastedData[i].left
+
+                if (typeof top === 'string' && top.includes('%')) {
+                    top = parseFloat(top) / 100 * this.selectedWidgets[0].widget.offsetHeight
+                    pastedData[i]._atop = top
+                    pastedData[i]._ptop = true
                 }
 
-                if (!isNaN(pastedData[i]).left && pastedData[i].left < minLeft) {
-                    minLeft = pastedData[i].left
+                if (typeof left === 'string' && left.includes('%')) {
+                    left = parseFloat(left) / 100 * this.selectedWidgets[0].widget.offsetWidth
+                    pastedData[i]._aleft = left
+                    pastedData[i]._pleft = true
                 }
+
+
+                if (top < minTop) minTop = top
+                if (left < minLeft) minLeft = left
 
             }
 
             for (let i in pastedData) {
 
-                if (!isNaN(pastedData[i].left)) pastedData[i].left = pastedData[i].left - minLeft + x
-                if (!isNaN(pastedData[i].top)) pastedData[i].top  = pastedData[i].top - minTop + y
+                if (pastedData[i]._pleft) {
+                    pastedData[i].left = ((pastedData[i]._aleft - minLeft + x) * 100 / this.selectedWidgets[0].widget.offsetWidth).toFixed(2) + '%'
+                } else {
+                    pastedData[i].left += - minLeft + x
+                }
+
+                if (pastedData[i]._ptop) {
+                    pastedData[i].top = ((pastedData[i]._atop - minTop + y) * 100 / this.selectedWidgets[0].widget.offsetHeight).toFixed(2) + '%'
+                } else {
+                    pastedData[i].top += - minTop + y
+                }
 
             }
 
@@ -596,6 +617,12 @@ class Editor {
 
             clone.left = x
             clone.top  = y
+
+            if (this.usePercents) {
+                clone.top = (100 * y / editor.selectedWidgets[0].widget.offsetHeight).toFixed(2) + '%'
+                clone.left= (100 * x / editor.selectedWidgets[0].widget.offsetWidth).toFixed(2) + '%'
+            }
+
 
         }
 

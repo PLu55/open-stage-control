@@ -52,7 +52,7 @@
 
         --widget-spacing: calc(var(--widget-padding) / 2);
 
-        padding: var(--widget-spacing);
+        padding: calc(var(--line-width) + var(--widget-spacing));
 
         grid-template:
             "a a b" auto / 1fr;
@@ -70,6 +70,7 @@
         width: auto;
         margin: var(--widget-spacing);
         --widget-padding: 2rem;
+        --line-width: 0;
     }
 
     .pad {
@@ -98,7 +99,7 @@
         --alpha-fill-off: 0.5;
         --alpha-fill-on: 0;
         --alpha-stroke: 0;
-        --widget-padding: -1rem;
+        --widget-padding: 0rem;
 
         &:after {
             content:"";
@@ -120,7 +121,7 @@
         --alpha-stroke: 0;
         --alpha-fill-off: 0.1;
         --alpha-fill-on: 0.25;
-        --widget-padding: -1rem;
+        --widget-padding: 0rem;
     }
 
 }

@@ -22,7 +22,7 @@ class Pad extends Canvas {
         super.cacheCanvasStyle(style)
 
         this.pointSize = parseFloat(style.getPropertyValue('--pointSize')) * PXSCALE
-        this.padPadding = (this.cssVars.padding + PXSCALE)
+        this.padPadding = (this.cssVars.padding + this.cssVars.lineWidth) + 2 * PXSCALE
 
     }
 

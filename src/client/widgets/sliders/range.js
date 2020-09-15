@@ -214,7 +214,8 @@ class Range extends Fader {
             d2 = Math.round(fader.percentToCoord(fader.valueToPercent(this.faders[this.getProp('horizontal')?1:0].value))),
             m = this.getProp('horizontal') ? this.height / 2 : this.width / 2,
             dashed = this.getProp('dashed'),
-            compact = this.getProp('design') === 'compact'
+            compact = this.getProp('design') === 'compact',
+            knobHeight = this.cssVars.knobSize, knobWidth = knobHeight * .6
 
         this.clear()
 
@@ -233,11 +234,11 @@ class Range extends Fader {
         if (compact) {
             this.ctx.lineWidth = Math.round(width - this.gaugePadding * 2)
         } else {
-            this.ctx.lineWidth = 2 * PXSCALE
+            this.ctx.lineWidth = this.cssVars.lineWidth
         }
 
 
-        if (dashed) this.ctx.setLineDash([PXSCALE, PXSCALE])
+        if (dashed) this.ctx.setLineDash([PXSCALE * dashed[0], PXSCALE * dashed[1]])
 
 
         if (this.cssVars.alphaFillOff) {
@@ -274,7 +275,7 @@ class Range extends Fader {
             this.ctx.lineTo(width, height)
             this.ctx.lineTo(0, height)
             this.ctx.closePath()
-            this.ctx.lineWidth = 2 * PXSCALE
+            this.ctx.lineWidth = 2 * this.cssVars.lineWidth
             this.ctx.stroke()
 
 
@@ -282,14 +283,17 @@ class Range extends Fader {
 
             this.ctx.globalAlpha = 1
             this.ctx.fillStyle = this.cssVars.colorFill
+            var compactAdjust = 1 / (height - this.gaugePadding) * (height-this.gaugePadding - knobHeight)
 
             this.ctx.beginPath()
-            this.ctx.rect(this.gaugePadding, Math.min(d, height - this.gaugePadding - PXSCALE), width - this.gaugePadding * 2, PXSCALE)
+            d *= compactAdjust
+            this.ctx.rect(this.gaugePadding, d, width - this.gaugePadding * 2, knobHeight)
             this.ctx.fill()
 
             // extra knob
             this.ctx.beginPath()
-            this.ctx.rect(this.gaugePadding, Math.min(d2, height - this.gaugePadding - PXSCALE), width - this.gaugePadding * 2, PXSCALE)
+            d2 *= compactAdjust
+            this.ctx.rect(this.gaugePadding, d2, width - this.gaugePadding * 2, knobHeight)
             this.ctx.fill()
 
 
@@ -306,7 +310,7 @@ class Range extends Fader {
                     this.ctx.fillStyle = this.cssVars.colorBg
 
                     this.ctx.beginPath()
-                    this.ctx.rect(m - 6 * PXSCALE, _d - 10 * PXSCALE, 12 * PXSCALE, 20 * PXSCALE)
+                    this.ctx.rect(m - knobWidth / 2, _d - knobHeight / 2, knobWidth, knobHeight)
                     this.ctx.fill()
 
                     this.ctx.globalAlpha = this.cssVars.alphaStroke
@@ -314,7 +318,7 @@ class Range extends Fader {
                     this.ctx.lineWidth = PXSCALE
 
                     this.ctx.beginPath()
-                    this.ctx.rect(m - 5.5 * PXSCALE, _d - 9.5 * PXSCALE, 11 * PXSCALE, 19 * PXSCALE)
+                    this.ctx.rect(m - knobWidth / 2 + 0.5 * PXSCALE, _d - knobHeight / 2  + 0.5 * PXSCALE, knobWidth - PXSCALE, knobHeight - PXSCALE)
                     this.ctx.stroke()
 
                 }
@@ -323,12 +327,12 @@ class Range extends Fader {
                 this.ctx.fillStyle = this.cssVars.colorWidget
 
                 this.ctx.beginPath()
-                this.ctx.rect(m - 3 * PXSCALE, _d, 6 * PXSCALE, PXSCALE)
+                this.ctx.rect(m - knobWidth / 6, _d, knobWidth / 3, PXSCALE)
                 this.ctx.fill()
 
             }
 
-            this.clearRect = [m - 10 * PXSCALE, this.gaugePadding - 10 * PXSCALE, 20 * PXSCALE, height - 2 * this.gaugePadding + 20 * PXSCALE]
+            this.clearRect = [m - knobWidth / 2 - PXSCALE, this.gaugePadding - knobHeight / 2  - PXSCALE, knobWidth + 2 * PXSCALE, height - 2 * this.gaugePadding + knobHeight + 2 * PXSCALE]
 
         } else {
 
@@ -366,7 +370,7 @@ class Range extends Fader {
         if (this.getProp('pips')) {
             this.ctx.globalAlpha = 1
             this.ctx.drawImage(this.pips, 0, 0)
-            if (!compact) this.clearRect = [this.clearRect, [m + 10 * PXSCALE, 0, 10 * PXSCALE + this.pipsTextSize, height]]
+            if (!compact) this.clearRect = [this.clearRect, [m + knobWidth / 2, 0, 12 * PXSCALE + this.pipsTextSize, height]]
         }
 
 

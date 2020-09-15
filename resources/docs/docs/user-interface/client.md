@@ -22,6 +22,7 @@
     - Grid: toggle grid
     - Project tree: toggle project tree's visibility
     - Inspector: toggle inspector's visibility
+    - Relative units (%): when enabled, newly created widgets will have their position and size set in percents.
 - Fullscreen: toggle fullscreen
 - Prevent sleep (mobile only): attempt to prevent device from going to sleep when idle
 

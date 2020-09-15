@@ -151,6 +151,7 @@ class Canvas extends Widget {
                 },10)
                 return
             case 'css':
+            case 'lineWidth':
             case 'padding':
                 resize.check(this.canvas, true)
                 setTimeout(()=>{

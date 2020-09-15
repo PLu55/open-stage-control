@@ -88,7 +88,7 @@ module.exports = class Plot extends StaticProperties(Canvas, {bypass: true, inte
         this.ctx.fillStyle = this.cssVars.colorText
         this.ctx.globalAlpha = this.cssVars.alphaPips
 
-        var margin = this.cssVars.padding
+        var margin = this.cssVars.padding + this.cssVars.lineWidth
 
         if (margin < this.fontSize * 1.5) return
 
@@ -114,7 +114,7 @@ module.exports = class Plot extends StaticProperties(Canvas, {bypass: true, inte
     draw_line() {
 
         var points = [],
-            padding = this.cssVars.padding + PXSCALE,
+            padding = this.cssVars.padding + this.cssVars.lineWidth,
             decimals = this.getProp('smooth') ? 1 : 0,
             length = this.value.length,
             x, y, i, previousValue, nx, ny

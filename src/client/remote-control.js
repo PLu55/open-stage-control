@@ -27,7 +27,8 @@ var callbacks = {
             }
 
             updateWidget(widget, {
-                reuseChildren: !(newdata.widgets || newdata.tabs)
+                reuseChildren: !(newdata.widgets || newdata.tabs),
+                changedProps: Object.keys(newdata)
             })
 
         }
@@ -56,7 +57,8 @@ var callbacks = {
             deepExtend(data, newdata)
 
             updateWidget(widget, {
-                reuseChildren: !(newdata.widgets || newdata.tabs)
+                reuseChildren: !(newdata.widgets || newdata.tabs),
+                changedProps: Object.keys(newdata)
             })
 
         }

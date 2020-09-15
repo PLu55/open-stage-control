@@ -24,6 +24,10 @@ class Button extends Widget {
                 '- Insert icons using the prefix ^ followed by the icon\'s name : `^play`, `^pause`, etc (see https://fontawesome.com/icons?d=gallery&s=solid&m=free)',
                 '- Icons can be transformed with the following suffixes: `.flip-[horizontal|vertical|both]`, `.rotate-[90|180|270]`, `.spin`, `.pulse`. Example: `^play.flip-horizontal`',
             ]},
+            vertical: {type: 'boolean', value: false, help: 'Set to `true` to display the text vertically'},
+            wrap: {type: 'boolean', value: false, help: [
+                'Set to `true` to wrap long lines automatically.',
+            ]},
             on: {type: '*', value: 1, help: [
                 'Set to `null` to send send no argument in the osc message',
             ]},
@@ -128,9 +132,14 @@ class Button extends Widget {
         }
 
 
+
         this.value = this.getProp('off')
 
         this.label = html`<label></label>`
+
+        if (this.getProp('wrap')) this.label.classList.add('wrap')
+        if (this.getProp('vertical')) this.label.classList.add('vertical')
+
         this.updateLabel()
 
     }

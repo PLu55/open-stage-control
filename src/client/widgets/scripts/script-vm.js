@@ -3,7 +3,8 @@ var widgetManager = require('../../managers/widgets'),
     cache = require('../../managers/cache'),
     {deepCopy} = require('../../utils'),
     {urlParser} = require('../utils'),
-    Vm = require('../vm')
+    Vm = require('../vm'),
+    toolbar
 
 
 class ScriptVm extends Vm {
@@ -312,8 +313,28 @@ class ScriptVm extends Vm {
 
         }
 
+        this.sandbox.contentWindow.toolbar = (...args)=>{
+
+            var options = this.getValueOptions()
+
+            if (!options.send) return
+
+            toolbar = toolbar || require('../../ui/ui-toolbar')
+
+            var action = toolbar.entries.filter(x=>!x.separator)
+
+            for (var i of args) {
+                if (action[i]) action = action[i].action
+                if (!Array.isArray(action)) break
+                action = action.filter(x=>!x.separator)
+            }
+
+            if (typeof action === 'function') action()
+
+        }
+
         for (var imports of ['set', 'get', 'getProp', 'updateProp', 'send', 'httpGet', 'stateGet', 'stateSet', 'storage',
-            'setInterval', 'clearInterval', 'setTimeout', 'clearTimeout', 'unfocus', 'setScroll', 'getScroll']) {
+            'setInterval', 'clearInterval', 'setTimeout', 'clearTimeout', 'unfocus', 'setScroll', 'getScroll', 'toolbar']) {
             this.sanitize(this.sandbox.contentWindow[imports])
         }
 

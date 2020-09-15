@@ -26,7 +26,7 @@ class Clone extends Container() {
             props: {type: 'object', value: {}, help: 'Cloned widget\'s properties to override'},
 
         }, [
-            'colorText', 'colorWidget', 'colorFill', 'colorStroke', 'alphaStroke', 'alphaFillOff', 'alphaFillOn', 'padding',
+            'colorBg', 'colorText', 'colorWidget', 'colorFill', 'colorStroke', 'alphaStroke', 'alphaFillOff', 'alphaFillOn', 'padding', 'lineWidth',
             'label', 'color',
             '_value', 'default', 'value', 'script', 'linkId',
             '_osc', 'decimals', 'address', 'preArgs', 'typeTags', 'target', 'ignoreDefaults', 'bypass'
@@ -298,6 +298,7 @@ class Clone extends Container() {
             case 'alphaFillOff':
             case 'alphaFillOn':
             case 'colorBg':
+            case 'lineWidth':
             case 'padding':
                 for (var w of this.children) {
                     if (w) w.onPropChanged(propName)

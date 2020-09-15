@@ -6,7 +6,9 @@ MIDI_TO_OSC = {
     CONTROL_CHANGE: '/control',
     PROGRAM_CHANGE: '/program',
     PITCH_BEND: '/pitch',
-    SYSTEM_EXCLUSIVE: '/sysex'
+    SYSTEM_EXCLUSIVE: '/sysex',
+    CHANNEL_PRESSURE: '/channel_pressure',
+    POLY_PRESSURE: '/key_pressure'
 }
 
 OSC_TO_MIDI = {
@@ -14,7 +16,9 @@ OSC_TO_MIDI = {
     '/control': CONTROL_CHANGE,
     '/program': PROGRAM_CHANGE,
     '/pitch': PITCH_BEND,
-    '/sysex': SYSTEM_EXCLUSIVE
+    '/sysex': SYSTEM_EXCLUSIVE,
+    '/channel_pressure': CHANNEL_PRESSURE,
+    '/key_pressure': POLY_PRESSURE
 }
 
 def midi_str(message):
@@ -43,6 +47,10 @@ def midi_str(message):
                 s = 'PROGRAM_CHANGE: channel=%i, program=%i' % (channel, message[1])
             elif mtype == PITCH_BEND:
                 s = 'PITCH_BEND: channel=%i, pitch=%i' % (channel, message[1] + message[2] * 128 if len(message) == 3 else message[1])
+            elif mtype == CHANNEL_PRESSURE:
+                s = 'CHANNEL_PRESSURE: channel=%i, pressure=%i' % (channel, message[1])
+            elif mtype == POLY_PRESSURE:
+                s = 'KEY_PRESSURE: channel=%i, note=%i, pressure=%i' % (channel, message[1], message[2])
 
         except IndexError:
 

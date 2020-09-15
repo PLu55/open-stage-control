@@ -287,7 +287,7 @@ osc-inspector-color {
         background: var(--color-background);
         flex: 1;
         width:  auto;
-        margin: 8rem;
+        --widget-padding: #{$padding};
     }
 
     .actions {
@@ -298,14 +298,17 @@ osc-inspector-color {
         height: 42rem + $padding * 2;
         line-height: 38rem;
         flex-shrink: 0;
-        border: $padding solid var(--color-ui-background);
-        padding: 1rem;
+        background: var(--color-ui-background);
+        padding: $padding;
         .btn {
             flex: 1;
-            margin: 1rem;;
             text-overflow: clip;
             min-width: 0;
             background: var(--color-ui-button);
+            margin-right: $padding;
+            &:last-child {
+                margin: 0;
+            }
         }
     }
 

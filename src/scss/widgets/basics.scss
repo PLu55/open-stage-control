@@ -50,6 +50,21 @@
         height: 100%;
         width: 100%;
         border: 2rem solid transparent;
+
+        &.wrap {
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        &.vertical {
+            transform: rotate(180deg);
+            text-overflow: ellipsis;
+            -webkit-writing-mode:vertical-rl;
+            writing-mode:vertical-rl;
+            i {
+                transform: rotate(180deg);
+                writing-mode: initial;
+            }
+        }
     }
 
     &.on {
@@ -88,7 +103,7 @@
         display: flex;
         flex-direction: column;
         --widget-spacing: calc(var(--widget-padding) / 2);
-        margin: calc(var(--widget-spacing) + 1rem);
+        margin: calc(var(--widget-spacing) + var(--line-width));
 
 
     }
@@ -125,6 +140,7 @@
         overflow: hidden;
         @include pseudo-fill($z: -1);
         &:after {
+            --line-width: 1rem;
             margin: calc(var(--widget-spacing) - 1rem);
         }
 
@@ -249,7 +265,7 @@
 
         @include pseudo-stroke($z: 2);
         &:before {
-            border-width: 1rem;
+            border-width: var(--line-width);
         }
 
 
@@ -349,7 +365,7 @@
         display: flex;
 
         flex-direction: row;
-        padding: calc(var(--widget-padding) / 2 + 1rem);
+        padding: calc(var(--widget-padding) / 2 + var(--line-width));
 
         .item {
             position: relative;

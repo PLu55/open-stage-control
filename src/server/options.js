@@ -7,31 +7,19 @@ module.exports = {
                 'Targets must be ip:port or hostname:port pairs (port must be >= 1024) or midi:port_name pairs' : true
         }
     },
-    'l': {alias: 'load', type: 'string', file: {name: 'OSC Session (.json)', extensions: ['json', 'js']}, describe: 'session file to load',
+    'l': {alias: 'load', type: 'string', file: {name: 'OSC Session (.json)', extensions: ['json']}, describe: 'session file to load (.json)',
         check: (arg)=>{
             return fs.existsSync(arg) ? true : 'Session file not found: ' + arg
         }
     },
-    'state': {type: 'string', file: {name: 'OSC State (.state)', extensions: ['state']}, describe: 'state file to load',
+    'state': {type: 'string', file: {name: 'OSC State (.state)', extensions: ['state']}, describe: 'state file to load (.state)',
         check: (arg)=>{
             return fs.existsSync(arg) ? true : 'State file not found: ' + arg
         }
     },
-    'c': {alias: 'custom-module', type: 'array', file: {name: 'OSC Custom module (.js)', extensions: ['js']}, describe: 'custom module file to load (custom options can be passed after the filename)',
+    'c': {alias: 'custom-module', type: 'string', file: {name: 'OSC Custom module (.js)', extensions: ['js']}, describe: 'custom module file to load (.js)',
         check: (arg)=>{
-
-            var customModule = arg.slice()
-
-            // consolidate path containing whitespaces
-            if (!customModule[0].includes('.js')) {
-                var index = customModule.findIndex(x => typeof x === 'string' && x.includes('.js'))
-                if (index !== undefined) {
-                    var _path = customModule.slice(0, index + 1).join(' ')
-                    customModule.splice(0, index + 1, _path)
-                }
-            }
-
-            return fs.existsSync(customModule[0]) ? true : 'Custom module file not found: ' + customModule[0]
+            return fs.existsSync(arg) ? true : 'Custom module file not found: ' + arg
         },
     },
     'p': {alias: 'port', type: 'number', describe: 'http port of the server (default to 8080)',
