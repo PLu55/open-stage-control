@@ -27,7 +27,6 @@ module.exports = class IPlot extends Canvas {
             origin: {type: 'number', value: 'auto', help: 'Defines the y axis origin. Set to `false` to disable it.'},
             pips:{type: 'boolean', value: true, help: 'Set to `false` to hide the scale'},
 
-//        }, ['interaction', 'decimals', 'typeTags', 'bypass'], {
           }, [], {
 
             value: {type: 'array|string', value: '', help: [
@@ -230,7 +229,7 @@ module.exports = class IPlot extends Canvas {
     dragHandle(e) {
 
         var x, y, dx, dy, xmin, xmax;
-        console.log(e);
+
         if ( this.hit < 0 ) return;
 
         dx = (e.offsetX - this.x0);
@@ -253,8 +252,9 @@ module.exports = class IPlot extends Canvas {
     dragendHandle(e) {
 
         this.hit = -1;
-        //this.setValue(this.value);
-        this.changed();
+        this.setValue(this.value,  {sync: true, send: true});
+        //this.setValue(this.value,  {sync: true, send: true, dragged: true});
+        //this.changed();
     }
 
     draw() {
@@ -401,7 +401,7 @@ module.exports = class IPlot extends Canvas {
             }
 
             this.batchDraw()
-
+            if (options.send) this.sendValue()
             if (options.sync) this.changed(options)
 
         }
